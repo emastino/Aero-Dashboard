@@ -33,13 +33,14 @@ def read_com_port():
                     ms_offset = time.time()*1000.0
                     data_acquisition_started = True
 
-                raw_ports_array = data.split()
+                raw_ports_array = data.split(",")
                 pressures = []
                 ms = time.time()*1000.0
                 for i in range(len(raw_ports_array)):
                     pressures.append(raw_ports_array[i].split(":")[1])
                 liveplot.add_point(ms-ms_offset, pressures)
                 window["-ATM_PORT-"].update(pressures[0])
+                window["-RAM_PORT-"].update(pressures[1])
         except:
             print("No COM Ports Available :(")
             data_acquisition_started = False
@@ -90,15 +91,18 @@ first_column =  [
 
 port_management = [
     [sg.Text("Port Management", justification="left", font=('Arial Bold', title_card_size, "underline"))],
-    [sg.Checkbox(text="Atmospheric Port [AP]",key="-AP_CB-", font=('Arial', 14),enable_events=True,default=True ),
-     sg.Text("       0.00",key="-ATM_PORT-", font=('Arial', 14),enable_events=True,
-             background_color="white", text_color="black", justification="right"),
-     sg.Text("kPa", font=('Arial', 14),enable_events=True)],
-    [sg.Checkbox(text="Ram Port [RP]",key="-RP_CB-", font=('Arial', 14),enable_events=True,default=True)],
+    [sg.Checkbox(text="Atm. Port",key="-AP_CB-", font=('Arial', 14),enable_events=True,default=True ),
+        sg.Text("       0.00",key="-ATM_PORT-", font=('Arial', 14),enable_events=True,
+                background_color="white", text_color="black", justification="right"),
+        sg.Text("kPa", font=('Arial', 14))],
+    [sg.Checkbox(text="Ram Port",key="-RP_CB-", font=('Arial', 14),enable_events=True,default=True),
+        sg.Text("       0.00",key="-RAM_PORT-", font=('Arial', 14),enable_events=True,
+                background_color="white", text_color="black", justification="right"),
+        sg.Text("kPa", font=('Arial', 14))],
     [sg.Checkbox(text="Port 1",key="-P1_CB-", font=('Arial', 14),enable_events=True,default=True), ],
     [sg.Checkbox(text="Port 2",key="-P2_CB-", font=('Arial', 14),enable_events=True,default=True), ],
     [sg.Checkbox(text="Port 3",key="-P3_CB-", font=('Arial', 14),enable_events=True,default=True), ],
-    [sg.Checkbox(text="Port 4",key="-P4_CB-", font=('Arial', 14),enable_events=True,default=True),],
+    [sg.Checkbox(text="Port 4",key="-P4_CB-", font=('Arial', 14),enable_events=True,default=True), ],
     [sg.Checkbox(text="Port 5",key="-P5_CB-", font=('Arial', 14),enable_events=True,default=True), ],
     [sg.Checkbox(text="Port 6",key="-P6_CB-", font=('Arial', 14),enable_events=True,default=True), ],
     [sg.Checkbox(text="Port 7",key="-P7_CB-", font=('Arial', 14),enable_events=True,default=True), ],
@@ -160,7 +164,7 @@ def main_loop():
 
         # Load new airfoil profile
         if (event == "-LOAD_AIRFOIL-") and (values["-AIRFOIL_FILE-"] != ""):
-            airfoil.load_airfoil(values["-AIRFOIL_FILE-"])
+            airfoil.load_airfoil(values["-AIRFOIL_FILE-"], window['-CHORD_INPUT-'].get())
             airfoil.draw_figure()
 
 

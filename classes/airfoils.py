@@ -17,6 +17,7 @@ class airfoils:
         self.x_array = []
         self.y_upper_array = []
         self.y_lower_array = []
+        self.chord = 1.0
 
         # Port locations
         self.x_upper_ports = []
@@ -48,8 +49,16 @@ class airfoils:
         return self.tkcanvas
 
     def format_figure(self):
-        self.ax.set(xlim=(0, 1.05),
-                    ylim=(-0.35, 0.35))
+
+
+        xlim_min = -(self.chord)*0.1
+        xlim_max =  1.05*self.chord
+
+        ylim_min = -0.35*self.chord
+        ylim_max = 0.35*self.chord
+
+        self.ax.set(xlim=(xlim_min,xlim_max),
+                    ylim=(ylim_min, ylim_max))
 
         self.ax.set_title(self.name)
         self.ax.set_ylabel("y/c")
@@ -57,8 +66,8 @@ class airfoils:
         self.ax.grid()
         # self.fig.tight_layout()
 
-    def load_airfoil(self, file):
-
+    def load_airfoil(self, file, chord):
+        self.chord = float(chord)
         self.file = file
         self.ax.clear()
 
@@ -72,8 +81,8 @@ class airfoils:
 
             if counter > 0:
                 x, y = line.split()
-                self.x_array.append(float(x))
-                self.y_upper_array.append(float(y))
+                self.x_array.append(self.chord*float(x))
+                self.y_upper_array.append(self.chord*float(y))
             else:
                 self.name = line
 

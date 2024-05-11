@@ -12,9 +12,10 @@ class liveplots:
         self.time_recorded = []
         self.pressure_recorded = []
         self.time_plotted = []
-        self.pressures_plotted =[ []]#, [], [], [], [], []]
+        self.pressures_plotted =[ [], []]#, [], [], [], [], []]
         self.buffer_size = buffer_size
         self.record_is_true = False
+
 
         # self.name = "time vs pressure"
 
