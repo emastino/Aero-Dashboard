@@ -42,7 +42,53 @@ void loop() {
     Serial.print(",");
 
     Serial.print("P2:");
-    Serial.println(p_2);
+    Serial.print(p_2);
+    Serial.print(",");
+
+    
+    // fake data
+    Serial.print("P3:");
+    Serial.print(p_2+5);
+    Serial.print(",");
+
+    Serial.print("P4:");
+    Serial.print(p_2-12);
+    Serial.print(",");
+
+    Serial.print("P5:");
+    Serial.print(p_2+66);
+    Serial.print(",");
+
+    Serial.print("P6:");
+    Serial.print(p_2+11);
+    Serial.print(",");
+
+    Serial.print("P7:");
+    Serial.print(p_2-35);
+    Serial.print(",");
+
+    Serial.print("P8:");
+    Serial.print(p_2);
+    Serial.print(",");
+
+    Serial.print("P9:");
+    Serial.print(p_2);
+    Serial.print(",");
+
+    Serial.print("P10:");
+    Serial.print(p_1+9);
+    Serial.print(",");
+
+    Serial.print("P11:");
+    Serial.print(p_1-9);
+    Serial.print(",");
+    
+    Serial.print("P12:");
+    Serial.println(p_2+4);
+
+
+
+    
   }
 
 }

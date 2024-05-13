@@ -10,6 +10,7 @@ class airfoils:
 
     def __init__(self, canvas):
         self.fig, self.ax = plt.subplots( facecolor = 'aliceblue')
+        self.fig.set_size_inches(5.5, 3.5)
         self.ax.set_facecolor('lavender')
         self.file = ""
         self.name = "Airfoil - XXXX"
@@ -50,21 +51,25 @@ class airfoils:
 
     def format_figure(self):
 
-
-        xlim_min = -(self.chord)*0.1
-        xlim_max =  1.05*self.chord
-
-        ylim_min = -0.35*self.chord
-        ylim_max = 0.35*self.chord
+        try:
+            xlim_min = min(self.x_array)
+            xlim_max =  max(self.x_array)
+            ylim_min = min(self.y_upper_array)
+            ylim_max = max(self.y_upper_array)
+        except:
+            xlim_min = -0.1
+            xlim_max = 1.1
+            ylim_min = -0.15
+            ylim_max = 0.35
 
         self.ax.set(xlim=(xlim_min,xlim_max),
                     ylim=(ylim_min, ylim_max))
-
+        self.ax.axis('equal')
         self.ax.set_title(self.name)
-        self.ax.set_ylabel("y/c")
-        self.ax.set_xlabel("x/c")
+        self.ax.set_ylabel("y [mm]")
+        self.ax.set_xlabel("x [mm]")
         self.ax.grid()
-        # self.fig.tight_layout()
+        self.fig.tight_layout()
 
     def load_airfoil(self, file, chord):
         self.chord = float(chord)

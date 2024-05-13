@@ -1,6 +1,8 @@
 import os
 
 import PySimpleGUI as sg
+import numpy as np
+
 from classes import airfoils as af
 from classes import  liveplots as lp
 import serial.tools.list_ports_windows
@@ -24,23 +26,37 @@ def read_com_port():
             # window.write_event_value('Event', datetime.datetime.now().strftime("%H:%M:%S"))
 
             arduino.write(bytes("g",  'utf-8'))
-            time.sleep(0.05)
+            time.sleep(0.1)
             data = arduino.readline().decode('ascii')
 
             if data != '' and (data[0:2] == 'P1'):
+
                 # make sure we are reading a full message
                 if not data_acquisition_started:
+
                     ms_offset = time.time()*1000.0
                     data_acquisition_started = True
 
                 raw_ports_array = data.split(",")
                 pressures = []
                 ms = time.time()*1000.0
+
                 for i in range(len(raw_ports_array)):
+
                     pressures.append(raw_ports_array[i].split(":")[1])
                 liveplot.add_point(ms-ms_offset, pressures)
                 window["-ATM_PORT-"].update(pressures[0])
                 window["-RAM_PORT-"].update(pressures[1])
+                window["-P1_PRESS-"].update(pressures[2])
+                window["-P2_PRESS-"].update(pressures[3])
+
+                den = float(window["-AIR_DENSITY-"].get())
+                v_inf = round(np.sqrt(2*100*(float(pressures[1]) - float(pressures[0]))/den),1)
+                visc = float(window["-VISC_INPUT-"].get())
+                c = float(window["-CHORD_INPUT-"].get())
+                window["-AIR_SPEED-"].update(v_inf)
+                window["-RE_NUM-"].update(round(den*v_inf*c/visc))
+
         except:
             print("No COM Ports Available :(")
             data_acquisition_started = False
@@ -70,15 +86,19 @@ first_column =  [
 
 
     [sg.Text("Model Info", justification="left", font=('Arial Bold', title_card_size, "underline"))],
-    [sg.Text("Chord", justification="left", font=('Arial', 15)),
+    [sg.Text("Chord             ", justification="left", font=('Arial', 15)),
         sg.Input('75', enable_events=True, key='-CHORD_INPUT-',s=10, font=('Arial', 15), justification='right'),
         sg.Text("[mm]", justification="left", font=('Arial', 15))],
-    [sg.Text("AoA", justification="left", font=('Arial', 15), tooltip="Angle of Attack in degrees"),
+    [sg.Text("AoA                ", justification="left", font=('Arial', 15), tooltip="Angle of Attack in degrees"),
         sg.Input('5', enable_events=True, key='-AOA_INPUT-',s=10, font=('Arial', 15), justification='right'),
         sg.Text("[deg]", justification="left", font=('Arial', 15))],
-    [sg.Text("Fluid Vis ", justification="left", font=('Arial', 15), tooltip="Units of Pascal Seconds"),
+    [sg.Text("Fluid Viscosity ", justification="left", font=('Arial', 15), tooltip="Units of Pascal Seconds"),
         sg.Input('1.81', enable_events=True, key='-VISC_INPUT-',s=10, font=('Arial', 15), justification='right'),
         sg.Text("[Pa*s]", justification="left", font=('Arial', 15))],
+    [sg.Text("Air Density      ", justification="left", font=('Arial', 15), tooltip="Air Density in kilograms per meters cubed"),
+        sg.Input('1.1', enable_events=True, key='-AIR_DENSITY-',s=10, font=('Arial', 15), justification='right'),
+        sg.Text("[kg/m3]", justification="left", font=('Arial', 15))],
+
 
     [sg.Text("Load Airfoil", justification="left", font=('Arial Bold', title_card_size, "underline"))],
     [sg.Canvas(key='-AIRFOIL_PLOT-', size=(200,150))],
@@ -92,15 +112,27 @@ first_column =  [
 port_management = [
     [sg.Text("Port Management", justification="left", font=('Arial Bold', title_card_size, "underline"))],
     [sg.Checkbox(text="Atm. Port",key="-AP_CB-", font=('Arial', 14),enable_events=True,default=True ),
-        sg.Text("       0.00",key="-ATM_PORT-", font=('Arial', 14),enable_events=True,
-                background_color="white", text_color="black", justification="right"),
+    sg.Input('     0.00', enable_events=False,s=10, font=('Arial', 14), justification='right',key="-ATM_PORT-"),
         sg.Text("kPa", font=('Arial', 14))],
+
+
     [sg.Checkbox(text="Ram Port",key="-RP_CB-", font=('Arial', 14),enable_events=True,default=True),
-        sg.Text("       0.00",key="-RAM_PORT-", font=('Arial', 14),enable_events=True,
-                background_color="white", text_color="black", justification="right"),
+        sg.Input('     0.00', enable_events=False,s=10, font=('Arial', 14), justification='right',key="-RAM_PORT-"),
         sg.Text("kPa", font=('Arial', 14))],
-    [sg.Checkbox(text="Port 1",key="-P1_CB-", font=('Arial', 14),enable_events=True,default=True), ],
-    [sg.Checkbox(text="Port 2",key="-P2_CB-", font=('Arial', 14),enable_events=True,default=True), ],
+
+
+    [sg.Checkbox(text="Port 1      ",key="-P1_CB-", font=('Arial', 14),enable_events=True,default=True),
+        sg.Input('     0.00', enable_events=False,s=10, font=('Arial', 14), justification='right',key="-P1_PRESS-"),
+        sg.Text("kPa", font=('Arial', 14))
+     ],
+
+
+    [sg.Checkbox(text="Port 2      ",key="-P2_CB-", font=('Arial', 14),enable_events=True,default=True),
+        sg.Input('     0.00', enable_events=False,s=10, font=('Arial', 14), justification='right',key="-P2_PRESS-"),
+         sg.Text("kPa", font=('Arial', 14))
+     ],
+
+
     [sg.Checkbox(text="Port 3",key="-P3_CB-", font=('Arial', 14),enable_events=True,default=True), ],
     [sg.Checkbox(text="Port 4",key="-P4_CB-", font=('Arial', 14),enable_events=True,default=True), ],
     [sg.Checkbox(text="Port 5",key="-P5_CB-", font=('Arial', 14),enable_events=True,default=True), ],
@@ -122,7 +154,21 @@ live_plot = [
     [sg.B(button_text="Record", key="-RECORD_DATA-", button_color='red')],
     [sg.Text("Results", justification="left", font=('Arial Bold', title_card_size, "underline"))],
 
+    [sg.T(text="Air Speed               ", font=('Arial', 14)),
+        sg.Input(0.0, key="-AIR_SPEED-", font=('Arial', 14), enable_events=False,
+                  justification="right", size=(10, 1)),
+        sg.Text("m/s", font=('Arial', 14))
+     ],
+
+    [sg.T(text="Reynold's Number ", font=('Arial', 14)),
+        sg.Input(0.0, key="-RE_NUM-", font=('Arial', 14), enable_events=False,
+                  justification="right", size=(10, 1)),
+         sg.Text("-", font=('Arial', 14))
+     ],
+
+
 ]
+
 
 layouts = [
     [
@@ -144,7 +190,7 @@ airfoil = af.airfoils(window['-AIRFOIL_PLOT-'].TKCanvas)
 airfoil.draw_figure()
 
 # Live Data Plot
-liveplot = lp.liveplots(50,window['-LIVE_PLOT-'].TKCanvas)
+liveplot = lp.liveplots(100,window['-LIVE_PLOT-'].TKCanvas)
 
 # Initialize the COMs port
 arduino = serial.Serial(baudrate=460800, timeout=.5)
